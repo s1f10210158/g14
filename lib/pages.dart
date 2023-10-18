@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:g14/servise/servise.dart';
-import 'package:g14/servise/state.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:g14/service.dart';
+import 'package:g14/state.dart';
 
 /// ---------------------------------------------------------
 /// サインイン画面    >> pages/sign_in.dart

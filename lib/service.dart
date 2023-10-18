@@ -3,21 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 /// 通信の流れをまとめておくサービスクラス
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-
-  Future<User?> signInWithEmailAndPassword(String email, String password) async {
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } catch (e) {
-      print(e.toString());
-      return null;
-    }
-  }
   /// サインイン
   Future<void> signIn() async {
     /* Google OAuth と通信 */

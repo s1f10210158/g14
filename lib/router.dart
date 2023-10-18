@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:g14/pages.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:g14/state.dart';
 part 'router.g.dart';
 
-
+/// ---------------------------------------------------------
+/// ページごとのパス    >> router/page_path.dart
+/// ---------------------------------------------------------
 class PagePath {
   // サインイン画面のパス
   static const signIn = '/sign-in';
@@ -12,6 +16,9 @@ class PagePath {
   static const home = '/home';
 }
 
+/// ---------------------------------------------------------
+/// GoRouter    >> router/router.dart
+/// ---------------------------------------------------------
 @riverpod
 GoRouter router(RouterRef ref) {
   // パスと画面の組み合わせ
@@ -73,6 +80,9 @@ GoRouter router(RouterRef ref) {
   );
 }
 
+/// ---------------------------------------------------------
+/// アプリ本体    >> router/app.dart
+/// ---------------------------------------------------------
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
