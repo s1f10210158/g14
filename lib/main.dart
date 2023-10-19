@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:g14/router.dart';
+import 'package:g14/servise/router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

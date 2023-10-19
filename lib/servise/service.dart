@@ -5,9 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   /// サインイン
   Future<void> signIn() async {
-    /* Google OAuth と通信 */
 
-    // あらかじめ登録しておいたクライアントID
     const clientId = '359218122786-vtf5m08s3cjr0309alcvj2err1008oor.apps.googleusercontent.com';
 
     // アプリが知りたい情報

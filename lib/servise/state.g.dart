@@ -18,7 +18,7 @@ final userChangesProvider = AutoDisposeStreamProvider<User?>.internal(
   userChanges,
   name: r'userChangesProvider',
   debugGetCreateSourceHash:
-  const bool.fromEnvironment('dart.vm.product') ? null : _$userChangesHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$userChangesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -36,7 +36,7 @@ final userProvider = AutoDisposeProvider<User?>.internal(
   user,
   name: r'userProvider',
   debugGetCreateSourceHash:
-  const bool.fromEnvironment('dart.vm.product') ? null : _$userHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$userHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -54,7 +54,7 @@ final signedInProvider = AutoDisposeProvider<bool>.internal(
   signedIn,
   name: r'signedInProvider',
   debugGetCreateSourceHash:
-  const bool.fromEnvironment('dart.vm.product') ? null : _$signedInHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$signedInHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -72,11 +72,11 @@ final userIdProvider = AutoDisposeProvider<String>.internal(
   userId,
   name: r'userIdProvider',
   debugGetCreateSourceHash:
-  const bool.fromEnvironment('dart.vm.product') ? null : _$userIdHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$userIdHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef UserIdRef = AutoDisposeProviderRef<String>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

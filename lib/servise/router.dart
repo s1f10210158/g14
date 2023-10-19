@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:g14/pages.dart';
+import 'package:g14/pages/pages.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:g14/state.dart';
+import 'package:g14/servise/state.dart';
 part 'router.g.dart';
 
 /// ---------------------------------------------------------
@@ -12,8 +12,21 @@ part 'router.g.dart';
 class PagePath {
   // サインイン画面のパス
   static const signIn = '/sign-in';
+  //サインアップ画面のパス
+  static const signUp = '/sign-up';
   // ホーム画面のパス
   static const home = '/home';
+  //カレンダー画面のパス
+  static const calendar = '/calendar';
+  //youtubeで調べるページ
+  static const youtubeSearch = '/youtubeSearch';
+  //料理サポート画面
+  static const cook = '/cook';
+
+
+
+
+
 }
 
 /// ---------------------------------------------------------
