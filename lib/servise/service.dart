@@ -6,7 +6,7 @@ class AuthService {
   /// サインイン
   Future<void> signIn() async {
 
-    const clientId = '359218122786-vtf5m08s3cjr0309alcvj2err1008oor.apps.googleusercontent.com';
+    const clientId = '359218122786-je7hm483f6befsavqu5d0q1l5mkchenh.apps.googleusercontent.com';
 
     // アプリが知りたい情報
     const scopes = [

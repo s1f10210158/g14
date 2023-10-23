@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:g14/pages/pages.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -37,20 +37,14 @@ GoRouter router(RouterRef ref) {
   // パスと画面の組み合わせ
   final routes = [
     // サインイン画面
-    GoRoute(
-      path: PagePath.signIn,
-      builder: (_, __) => const SignInPage(),
-    ),
+
 
     // ユーザーIDスコープで囲むためのシェル
     ShellRoute(
       builder: (_, __, child) => UserIdScope(child: child),
       routes: [
         // ホーム画面
-        GoRoute(
-          path: PagePath.home,
-          builder: (_, __) => const HomePage(),
-        ),
+
         // xxx画面
         // yyy画面
         // zzz画面
