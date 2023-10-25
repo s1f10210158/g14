@@ -39,6 +39,7 @@ dependencies:
   flutter_riverpod: ^2.4.4
   google_sign_in: ^6.1.5
   firebase_auth: ^4.11.0
+  flutter_native_splash: ^2.3.4
   flutter:
     sdk: flutter
 
@@ -69,6 +70,7 @@ flutter:
     - assets/avaters/
     - assets/Backgrounds/
     - assets/icons/
+    - assets/images/
     - assets/RiveAssets/
 
   # The following line ensures that the Material Icons font is
@@ -76,3 +78,14 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+flutter_native_splash:
+  color: "#fffffc"
+  image: assets/images/appicon2.png
+  android: true
+  ios: true
+  web: true
+  resize_mode: contain
+  android_gravity: center
+  ios_content_mode: scaleAspectFit
+  web_image_mode: center
+  fullscreen: true

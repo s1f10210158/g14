@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-
+import 'package:go_router/go_router.dart';
 import 'package:g14/screens/onboding/components/sign_in_form.dart';
 import 'package:g14/servise/service.dart';
 
 
 void signInWithGoogle(BuildContext context) async {
+  print("Attempting to sign in with Google...");
   try {
-    await AuthService().signIn(); // AuthServiceのsignInメソッドを呼び出します。
-    // サインイン成功時の処理を追加できます。
-    // 例：Navigator.pushReplacementNamed(context, '/home');
+    await AuthService().signIn();
+    print("Signed in successfully. Navigating to home...");
+    GoRouter.of(context).go('/home');
   } catch (error) {
-    // サインイン失敗時のエラーハンドリングを追加できます。
-    // 例：print("Error signing in with Google: $error");
+    print("Error signing in with Google: $error");
   }
 }
+
 
 Future<Object?> customSigninDialog(BuildContext context,
     {required ValueChanged onClosed}) {

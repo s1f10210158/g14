@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:g14/screens/home.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:g14/screens/onboding/onboding_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:g14/servise/state.dart';
 part 'router.g.dart';
@@ -24,9 +26,6 @@ class PagePath {
   static const cook = '/cook';
 
 
-
-
-
 }
 
 /// ---------------------------------------------------------
@@ -36,14 +35,19 @@ class PagePath {
 GoRouter router(RouterRef ref) {
   // パスと画面の組み合わせ
   final routes = [
-    // サインイン画面
-
 
     // ユーザーIDスコープで囲むためのシェル
     ShellRoute(
       builder: (_, __, child) => UserIdScope(child: child),
       routes: [
-        // ホーム画面
+        GoRoute(
+          path: '/',
+          pageBuilder: (context, state) => MaterialPage(child: OnboardingScreen()),  // MaterialPageを追加
+        ),
+        GoRoute(
+          path: '/home',
+          pageBuilder: (context, state) => MaterialPage(child: HomeScreen()),  // MaterialPageを追加
+        ),
 
         // xxx画面
         // yyy画面
@@ -57,18 +61,19 @@ GoRouter router(RouterRef ref) {
     // 表示しようとしている画面
     final page = state.uri.toString();
     // サインインしているかどうか
-    final signedIn = ref.read(signedInProvider);
+    final user = FirebaseAuth.instance.currentUser;
 
-    if (signedIn && page == PagePath.signIn) {
+    if (user != null && page == PagePath.signIn) {
       // もうサインインしているのに サインイン画面を表示しようとしている --> ホーム画面へ
       return PagePath.home;
-    } else if (!signedIn) {
+    } else if (user == null) {
       // まだサインインしていない --> サインイン画面へ
       return PagePath.signIn;
     } else {
       return null;
     }
   }
+
 
   // リフレッシュリスナブル - Riverpod と GoRouter を連動させるコード
   // サインイン状態が切り替わったときに GoRouter が反応する

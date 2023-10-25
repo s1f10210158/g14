@@ -5,33 +5,43 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:g14/screens/onboding/components/custom_sign_in.dart';
 import 'package:g14/screens/onboding/onboding_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:g14/screens/home.dart';
 
 
+final goRouter = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      pageBuilder: (context, state) => MaterialPage(child: OnboardingScreen()),  // MaterialPageを追加
+    ),
+    GoRoute(
+      path: '/home',
+      pageBuilder: (context, state) => MaterialPage(child: HomeScreen()),  // MaterialPageを追加
+    ),
+  ],
+);
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // ... その他の設定 ...
-      home: OnboardingScreen(),
+    return MaterialApp.router(
+      routerDelegate: goRouter.routerDelegate,
+      routeInformationParser: goRouter.routeInformationParser,
+      routeInformationProvider: goRouter.routeInformationProvider,
     );
   }
 }
 
-
 void main() async {
-  // Firebase を使う時に必要なコード 2
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // アプリを動かす
   const app = MyApp();
   const scope = ProviderScope(child: app);
   runApp(scope);
-
 }
-
