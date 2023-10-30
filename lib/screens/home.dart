@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:g14/screens/tab1.dart';
+import 'package:g14/servise/service.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,13 +14,13 @@ class _HomeScreenState extends State<HomeScreen> {
   User? _currentUser;
 
   final List<Widget> _pages = [
-    Center(child: Text('Tab 1')),  // 1つ目のタブの中身
+    Tab1(),  // 1つ目のタブの中身
     Center(child: Text('Tab 2')),  // 2つ目のタブの中身
     Center(child: Text('Tab 3')),  // 3つ目のタブの中身
     Center(child: Text('Tab 4')),  // 3つ目のタブの中身
+    Center(child: Text('Tab 5')),  // 3つ目のタブの中身
 
   ];
-
 
 
   @override
@@ -28,13 +31,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Cock!!'),
       actions: [
         if (_currentUser != null)
           Padding(
@@ -45,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _pages[_currentIndex],  // 現在のタブインデックスに応じたページを表示
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-          backgroundColor:Colors.blue,
         onTap: (index) {
           setState(() {
             _currentIndex = index;  // タップされたタブのインデックスを更新
@@ -55,18 +55,27 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Tab 1',
+            backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Tab 2',
+            backgroundColor: Colors.yellow,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Tab 3',
+            backgroundColor: Colors.red,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.edit_calendar_outlined),
             label: 'Tab 4',
+            backgroundColor: Colors.purple,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.attachment),
+            label: 'Tab 5',
+            backgroundColor: Colors.green,
           ),
         ],
       ),
