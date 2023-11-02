@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:g14/screens/tab1.dart';
+import 'package:g14/screens/tab2.dart';
 import 'package:g14/servise/service.dart';
+
 
 
 class HomeScreen extends StatefulWidget {
@@ -15,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     Tab1(),  // 1つ目のタブの中身
-    Center(child: Text('Tab 2')),  // 2つ目のタブの中身
+    Tab2(),  // 2つ目のタブの中身
     Center(child: Text('Tab 3')),  // 3つ目のタブの中身
     Center(child: Text('Tab 4')),  // 3つ目のタブの中身
     Center(child: Text('Tab 5')),  // 3つ目のタブの中身

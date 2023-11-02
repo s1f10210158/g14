@@ -9,7 +9,6 @@ import 'package:g14/servise/service.dart';
 import 'package:g14/servise/token.dart';
 
 
-
 class RecipeGenerator extends StatefulWidget {
   final String videoId;
 
