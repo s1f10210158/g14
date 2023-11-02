@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class RecipeGenerator2 extends StatefulWidget {
   final String videoId;
@@ -13,7 +12,7 @@ class RecipeGenerator2 extends StatefulWidget {
 }
 
 class _RecipeGenerator2State extends State<RecipeGenerator2> {
-  List<Map<String, dynamic>> subtitles = []; // 型を明示的に指定
+  List<Map<String, dynamic>> subtitles = [];
 
   @override
   void initState() {
@@ -38,6 +37,10 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
             };
           }).toList();
         });
+
+        // 字幕を取得した後、INIAD APIに送信
+        _sendMessage(subtitles.map((subtitle) => subtitle['text']).join(' '));
+
       } else {
         print("Error fetching subtitles: ${response.body}");
       }
@@ -46,23 +49,50 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
     }
   }
 
+  Future<void> _sendMessage(String text) async {
+    final String endpoint = 'https://api.openai.iniad.org/api/v1/chat/completions';
+    final String iniad_apiKey = 'UeOuO6C3PXFbiJDxM68LpE94iE9R3SuoFCQtmimdM9_wd8S-FAwRlAKzjNqNvWneji161chF5LpBDI7GtHZS2YQ';
 
+    final headers = {
+      'Authorization': 'Bearer $iniad_apiKey',
+      'Content-Type': 'application/json',
+    };
 
+    final body = jsonEncode({
+      'model': 'gpt-4',
+      'messages': [
+        {
+          'role': 'system',
+          'content': '日本語で対応して下さい。あなたは優秀なシェフです。あなたにyoutubeの字幕を渡します。その内容から材料と調理工程を教えて下さい。'
+        },
+        {
+          'role': 'user',
+          'content': text,
+        },
+      ],
+    });
 
+    final response = await http.post(
+      Uri.parse(endpoint),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+      final String reply = data['choices'][0]['message']['content'].trim();
+      print('Decoded text: $reply');
+    } else {
+      print('Error: ${response.body}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('字幕')),
-      body: ListView.builder(
-        itemCount: subtitles.length,
-        itemBuilder: (context, index) {
-          final subtitle = subtitles[index];
-          return ListTile(
-            title: Text(subtitle['text']),  // 辞書のキーを使用してアクセス
-            subtitle: Text('${subtitle['start']} - ${subtitle['duration']}'),
-          );
-        },
+      appBar: AppBar(title: Text('INIAD APIに送信中...')),
+      body: Center(
+        child: CircularProgressIndicator(), // ローディングインジケータを表示
       ),
     );
   }
