@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:g14/servise/router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:g14/screens/onboding/components/custom_sign_in.dart';
 import 'package:g14/screens/onboding/onboding_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:g14/screens/home.dart';
+import 'package:g14/screens/onboding/components/sign_up_form.dart';
 
 
 final goRouter = GoRouter(
@@ -18,6 +17,10 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/home',
       pageBuilder: (context, state) => MaterialPage(child: HomeScreen()),  // MaterialPageを追加
+    ),
+    GoRoute(
+      path: '/sign-up',
+      pageBuilder: (context, state) => MaterialPage(child: SignUpForm()), // SignUpForm はサインアップフォームウィジェット
     ),
   ],
 );

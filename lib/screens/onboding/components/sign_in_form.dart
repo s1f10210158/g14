@@ -3,61 +3,81 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rive/rive.dart';
 import 'package:g14/servise/service.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 
 
 class SignInForm extends StatefulWidget {
-  const SignInForm({
-    super.key,
-  });
+  const SignInForm({super.key});
 
   @override
   State<SignInForm> createState() => _SignInFormState();
 }
 
 class _SignInFormState extends State<SignInForm> {
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isShowLoading = false;
   bool isShowConfetti = false;
+
+  String email = ''; // クラスのメンバ変数として追加
+  String password = ''; // クラスのメンバ変数として追加
 
   late SMITrigger check;
   late SMITrigger error;
   late SMITrigger reset;
-
   late SMITrigger confetti;
 
   StateMachineController getRiveController(Artboard artboard) {
-    StateMachineController? controller =
-        StateMachineController.fromArtboard(artboard, "State Machine 1");
-    artboard.addController(controller!);
-    return controller;
+    final controller =
+    StateMachineController.fromArtboard(artboard, 'State Machine 1');
+    if (controller != null) {
+      artboard.addController(controller);
+      return controller;
+    }
+    throw Exception('Failed to find the state machine controller.');
   }
 
-  void signIn(BuildContext context) {
-    setState(() {
-      isShowLoading = true;
-      isShowConfetti = true;
-    });
-    Future.delayed(Duration(seconds: 1), () {
-      if (_formKey.currentState!.validate()) {
-        // show success
+  void signIn(BuildContext context) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save(); // フォームの内容を保存
+
+      setState(() {
+        isShowLoading = true;
+      });
+
+      try {
+        // AuthService を使用してサインインします。
+        print("Trying to sign in with email: $email and password: $password");
+        final UserCredential userCredential =
+        await AuthService().signInWithEmailPassword(email, password);
+
+        print("Signed in successfully. Navigating to home...");
+        GoRouter.of(context).go('/home');
         check.fire();
         Future.delayed(Duration(seconds: 2), () {
           setState(() {
             isShowLoading = false;
+            isShowConfetti = true; // サインイン成功時のコンフェティ表示をトリガー
           });
-          confetti.fire();
+          confetti.fire(); // コンフェティアニメーションを起動
         });
-      } else {
+      } on FirebaseAuthException catch (e) {
+        print("Failed to sign in: ${e.code}, ${e.message}");
+
+        // サインイン中にエラーが発生した場合の処理をここに記述します。
         error.fire();
-        Future.delayed(Duration(seconds: 2), () {
-          setState(() {
-            isShowLoading = false;
-          });
+        setState(() {
+          isShowLoading = false;
         });
+        // ここでユーザーにエラーメッセージを表示するなどの処理を追加することができます。
       }
-    });
+    } else {
+      error.fire(); // バリデーションエラー時のアニメーション
+    }
   }
+
+
+
 
 
   @override
@@ -78,11 +98,13 @@ class _SignInFormState extends State<SignInForm> {
                   child: TextFormField(
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return "";
+                        return "Please enter your email.";
                       }
                       return null;
                     },
-                    onSaved: (email) {},
+                    onSaved: (value) {
+                      email = value!;
+                    },
                     decoration: InputDecoration(
                         prefixIcon: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -99,11 +121,13 @@ class _SignInFormState extends State<SignInForm> {
                   child: TextFormField(
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return "";
+                        return "Please enter your password.";
                       }
                       return null;
                     },
-                    onSaved: (password) {},
+                    onSaved: (value) {
+                      password = value!;
+                    },
                     obscureText: true,
                     decoration: InputDecoration(
                         prefixIcon: Padding(

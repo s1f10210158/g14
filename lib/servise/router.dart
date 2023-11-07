@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:g14/screens/onboding/onboding_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:g14/servise/state.dart';
+import 'package:g14/screens/onboding/components/sign_up_form.dart';
 part 'router.g.dart';
 
 /// ---------------------------------------------------------
@@ -48,6 +49,11 @@ GoRouter router(RouterRef ref) {
           path: '/home',
           pageBuilder: (context, state) => MaterialPage(child: HomeScreen()),  // MaterialPageを追加
         ),
+        GoRoute(
+          path: '/sign-up',
+          pageBuilder: (context, state) => MaterialPage(child: SignUpForm()), // SignUpForm はサインアップフォームウィジェット
+        ),
+
 
         // xxx画面
         // yyy画面

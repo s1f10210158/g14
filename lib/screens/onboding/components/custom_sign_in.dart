@@ -86,7 +86,9 @@ Future<Object?> customSigninDialog(BuildContext context,
                         children: [
                           IconButton(
                               padding: EdgeInsets.zero,
-                              onPressed: () {},
+                              onPressed: () {
+                                GoRouter.of(context).go('/sign-up');
+                              },
                               icon: SvgPicture.asset(
                                 "assets/icons/email_box.svg",
                                 height: 64,

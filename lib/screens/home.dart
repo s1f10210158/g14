@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:g14/screens/tab1.dart';
 import 'package:g14/screens/tab2.dart';
 import 'package:g14/screens/tab4.dart';
-import 'package:g14/servise/service.dart';
 
 
 
