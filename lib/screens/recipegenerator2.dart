@@ -26,6 +26,8 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
       final response = await http.get(Uri.parse(functionUrl));
 
       if (response.statusCode == 200) {
+        print('Full Response (_fetchSubtitles): ${response.body}');
+        print('Response Length (_fetchSubtitles): ${response.body.length}');
         final Map<String, dynamic> data = jsonDecode(response.body);
         final List<dynamic> transcript = data['transcript'];
         setState(() {
@@ -59,7 +61,7 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
     };
 
     final body = jsonEncode({
-      'model': 'gpt-4',
+      'model': 'gpt-3.5-turbo',
       'messages': [
         {
           'role': 'system',
@@ -77,6 +79,9 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
       headers: headers,
       body: body,
     );
+
+    print('Full Response (_sendMessage): ${response.body}');
+    print('Response Length (_sendMessage): ${response.body.length}');
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
