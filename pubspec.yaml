@@ -9,6 +9,7 @@ environment:
   sdk: '>=3.1.2 <4.0.0'
 
 dependencies:
+  video_player: ^2.8.1
   intl: ^0.18.1
   table_calendar: ^3.0.9
   html: ^0.15.4
@@ -53,6 +54,7 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/RiveAssets/
+    - assets/gif/road.gif
 
   uses-material-design: true
 
