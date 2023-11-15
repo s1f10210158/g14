@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:video_player/video_player.dart';
 
+import 'package:g14/screens/recipegenerator2.dart';
 
 
 class Tab1 extends StatefulWidget {
@@ -140,7 +141,7 @@ class _Tab1State extends State<Tab1> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                RecipeGenerator(
+                                RecipeGenerator2(
                                   videoId: selectedVideoId,
                                 ),
                           ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class RecipeGenerator2 extends StatefulWidget {
   final String videoId;
@@ -14,6 +16,12 @@ class RecipeGenerator2 extends StatefulWidget {
 class _RecipeGenerator2State extends State<RecipeGenerator2> {
   List<Map<String, dynamic>> subtitles = [];
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  String? getCurrentUserUID() {
+    return _auth.currentUser?.uid;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -22,27 +30,19 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
 
   Future<void> _fetchSubtitles() async {
     try {
-      final functionUrl = 'https://asia-northeast1-dotted-crane-403823.cloudfunctions.net/get_transcript?video_id=${widget.videoId}';
+      // 現在のユーザーIDを取得
+      String? userId = getCurrentUserUID();
+      if (userId == null) {
+        print('ユーザーIDが見つかりません。');
+        return;
+      }
+
+      // Google Cloud FunctionsのURLにユーザーIDを含める
+      final functionUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/caption_firestoresave?video_id=${widget.videoId}&user_id=$userId';
       final response = await http.get(Uri.parse(functionUrl));
 
       if (response.statusCode == 200) {
-        print('Full Response (_fetchSubtitles): ${response.body}');
-        print('Response Length (_fetchSubtitles): ${response.body.length}');
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> transcript = data['transcript'];
-        setState(() {
-          subtitles = transcript.map<Map<String, dynamic>>((subtitleLine) {
-            return {
-              'text': subtitleLine['text'],
-              'start': subtitleLine['start'],
-              'duration': subtitleLine['duration']
-            };
-          }).toList();
-        });
-
-        // 字幕を取得した後、INIAD APIに送信
-        _sendMessage(subtitles.map((subtitle) => subtitle['text']).join(' '));
-
+        // レスポンスの処理...
       } else {
         print("Error fetching subtitles: ${response.body}");
       }
@@ -61,7 +61,7 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
     };
 
     final body = jsonEncode({
-      'model': 'gpt-3.5-turbo',
+      'model': 'gpt-4-1106-preview',
       'messages': [
         {
           'role': 'system',
