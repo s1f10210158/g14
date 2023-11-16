@@ -133,7 +133,6 @@ class _Tab1State extends State<Tab1> {
                       },
                     ),
                     title: Text(videoResult[index].title),
-                    subtitle: Text(videoResult[index].channelTitle),
                     onTap: () {
                       String? selectedVideoId = videoResult[index].id;
                       if (selectedVideoId != null) {

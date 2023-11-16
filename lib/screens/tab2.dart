@@ -14,7 +14,7 @@ class _Tab2State extends State<Tab2> {
   List<YouTubeVideo> videoResult = [];
 
   Future<void> callAPI() async {
-    String query = "レシピ";
+    String query = "有名シェフレシピ";
     videoResult = await youtube.search(
       query,
       order: 'relevance',

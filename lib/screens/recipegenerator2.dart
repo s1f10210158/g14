@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class RecipeGenerator2 extends StatefulWidget {
   final String videoId;
 
@@ -14,9 +13,9 @@ class RecipeGenerator2 extends StatefulWidget {
 }
 
 class _RecipeGenerator2State extends State<RecipeGenerator2> {
-  List<Map<String, dynamic>> subtitles = [];
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  String _responseText = "";
+  final TextEditingController _questionController = TextEditingController();
 
   String? getCurrentUserUID() {
     return _auth.currentUser?.uid;
@@ -30,74 +29,83 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
 
   Future<void> _fetchSubtitles() async {
     try {
-      // 現在のユーザーIDを取得
       String? userId = getCurrentUserUID();
       if (userId == null) {
-        print('ユーザーIDが見つかりません。');
+        setState(() {
+          _responseText = 'ユーザーIDが見つかりません。';
+        });
         return;
       }
 
-      // Google Cloud FunctionsのURLにユーザーIDを含める
       final functionUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/caption_firestoresave?video_id=${widget.videoId}&user_id=$userId';
       final response = await http.get(Uri.parse(functionUrl));
 
       if (response.statusCode == 200) {
-        // レスポンスの処理...
+        _sendQuestionToChatGPT(userId);
       } else {
-        print("Error fetching subtitles: ${response.body}");
+        setState(() {
+          _responseText = "Error fetching subtitles: ${response.body}";
+        });
       }
     } catch (e) {
-      print("Error fetching subtitles: $e");
+      setState(() {
+        _responseText = "Error fetching subtitles: $e";
+      });
     }
   }
 
-  Future<void> _sendMessage(String text) async {
-    final String endpoint = 'https://api.openai.iniad.org/api/v1/chat/completions';
-    final String iniad_apiKey = 'UeOuO6C3PXFbiJDxM68LpE94iE9R3SuoFCQtmimdM9_wd8S-FAwRlAKzjNqNvWneji161chF5LpBDI7GtHZS2YQ';
-
-    final headers = {
-      'Authorization': 'Bearer $iniad_apiKey',
-      'Content-Type': 'application/json',
-    };
-
-    final body = jsonEncode({
-      'model': 'gpt-4-1106-preview',
-      'messages': [
-        {
-          'role': 'system',
-          'content': '日本語で対応して下さい。あなたは優秀なシェフです。あなたにyoutubeの字幕を渡します。その内容から材料と調理工程を教えて下さい。'
-        },
-        {
-          'role': 'user',
-          'content': text,
-        },
-      ],
-    });
-
-    final response = await http.post(
-      Uri.parse(endpoint),
-      headers: headers,
-      body: body,
-    );
-
-    print('Full Response (_sendMessage): ${response.body}');
-    print('Response Length (_sendMessage): ${response.body.length}');
+  Future<void> _sendQuestionToChatGPT(String userId) async {
+    final functionUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/chatgpt_generate?video_id=${widget.videoId}&user_id=$userId';
+    final response = await http.get(Uri.parse(functionUrl));
 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-      final String reply = data['choices'][0]['message']['content'].trim();
-      print('Decoded text: $reply');
+      setState(() {
+        _responseText = _parseResponse(response.body);
+      });
     } else {
-      print('Error: ${response.body}');
+      setState(() {
+        _responseText = "Error communicating with ChatGPT: ${response.body}";
+      });
+    }
+  }
+
+  String _parseResponse(String responseBody) {
+    try {
+      return json.decode(responseBody);
+    } catch (e) {
+      // JSONのパースに失敗した場合は、元のレスポンスボディを返す
+      return responseBody;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('INIAD APIに送信中...')),
-      body: Center(
-        child: CircularProgressIndicator(), // ローディングインジケータを表示
+      appBar: AppBar(title: Text('ChatGPTとの連携')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _questionController,
+              decoration: InputDecoration(
+                labelText: '料理の鉄人に質問',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => _sendQuestionToChatGPT(getCurrentUserUID() ?? ""),
+              child: Text('質問を送信'),
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(_responseText),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
