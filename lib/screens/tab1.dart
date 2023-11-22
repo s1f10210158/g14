@@ -4,7 +4,9 @@ import 'package:g14/screens/recipegenerator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:video_player/video_player.dart';
+
 import 'package:g14/screens/recipegenerator2.dart';
+
 
 class Tab1 extends StatefulWidget {
   @override
@@ -13,18 +15,22 @@ class Tab1 extends StatefulWidget {
 
 class _Tab1State extends State<Tab1> {
   static const String key = "AIzaSyAd6OIW60UHOBRO_10VhujI6FujyBQsTB4";
+
   YoutubeAPI youtube = YoutubeAPI(key, maxResults: 20, type: 'video');
+
   List<YouTubeVideo> videoResult = [];
-  String selectedQuery = "お手軽レシピ"; // 初期値をお手軽レシピに設定
+
+  String selectedQuery = "簡単レシピ"; // 初期値を簡単レシピに設定
+
   bool _isLoading = true; //API呼び出し中trueにしておく
 
-  Future<void> callAPI(String query) async {
+  Future<void> callAPI() async {
     setState(() {
       _isLoading = true; // API呼び出し開始時にtrueに設定
     });
 
     List<YouTubeVideo> videos = await youtube.search(
-      query,
+      selectedQuery,
       order: 'relevance',
       videoDuration: 'any',
       regionCode: 'JP',
@@ -66,15 +72,22 @@ class _Tab1State extends State<Tab1> {
     }
   }
 
-  // 検索ボックスで検索するためのメソッド
-  void onSearch(String query) {
-    if (query.isNotEmpty) {
-      setState(() {
-        selectedQuery = query; // 入力された文字列をクエリとして設定
-        callAPI(query); // 新しいクエリでAPIを呼び出し
-      });
-    }
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    callAPI();
   }
+
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -82,11 +95,31 @@ class _Tab1State extends State<Tab1> {
       children: [
         Column(
           children: [
-            TextFormField(
-              onFieldSubmitted: onSearch, // テキストフィールドでEnterが押されたら検索実行
-              decoration: InputDecoration(
-                labelText: '検索',
-              ),
+            DropdownButton<String>(
+              value: selectedQuery,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedQuery = newValue;
+                    _isLoading = true; // ローディング状態をtrueに設定
+                    callAPI(); // 新しいクエリでAPIを再呼び出し
+                  });
+                }
+              },
+              items: <DropdownMenuItem<String>>[
+                DropdownMenuItem<String>(
+                  value: "簡単レシピ",
+                  child: Text("簡単レシピ"),
+                ),
+                DropdownMenuItem<String>(
+                  value: "和食　レシピ",
+                  child: Text("和食"),
+                ),
+                DropdownMenuItem<String>(
+                  value: "洋食　レシピ",
+                  child: Text("洋食"),
+                ),
+              ],
             ),
             Expanded(
               child: ListView.builder(
