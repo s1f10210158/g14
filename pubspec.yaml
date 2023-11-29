@@ -9,6 +9,13 @@ environment:
   sdk: '>=3.1.2 <4.0.0'
 
 dependencies:
+  firebase_storage: ^11.5.2
+  string_validator: ^1.0.2
+  email_validator: ^2.1.17
+  path_provider: ^2.1.1
+  image_picker: ^1.0.4
+  hyper_effects: ^0.1.1
+  shaky_animated_listview: ^0.0.5
   video_player: ^2.8.1
   intl: ^0.18.1
   table_calendar: ^3.0.9
@@ -52,9 +59,9 @@ flutter:
     - assets/avaters/
     - assets/Backgrounds/
     - assets/icons/
-    - assets/images/
     - assets/RiveAssets/
     - assets/gif/road.gif
+    - assets/images/
 
   uses-material-design: true
 
