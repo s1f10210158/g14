@@ -26,10 +26,17 @@ class EditEmailFormPageState extends State<EditEmailFormPage> {
 
   Future<void> updateEmail(String email) async {
     if (_currentUser != null) {
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(_currentUser!.uid)
-          .update({'email': email});
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .collection('profiles')
+            .doc('email')
+            .set({'email':email},
+            SetOptions(merge: true));
+      } catch (e) {
+        print('Error updating name: $e');
+      }
     }
   }
 

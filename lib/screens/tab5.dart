@@ -39,6 +39,7 @@ class _Tab5State extends State<Tab5> {
       String phone = 'Not set';
       String firstName = 'Not set';
       String lastName = 'Not set';
+      String email ='Not set';
 
       try {
         var phoneDoc = await FirebaseFirestore.instance
@@ -62,11 +63,22 @@ class _Tab5State extends State<Tab5> {
           lastName = nameDoc.data()!['lastName'] ?? 'Not set';
         }
 
+        var emailDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .collection('profiles')
+            .doc('email')
+            .get();
+
+        if (emailDoc.exists && emailDoc.data() != null) {
+          email = emailDoc.data()!['mail'] ?? 'Not set';
+        }
+
         setState(() {
           _profileData = {
             'name': '$firstName $lastName',
             'phone': phone,
-            'email': 'Not set',
+            'email': email,
             'about': 'No description added.',
             'image': imageUrl,
           };
