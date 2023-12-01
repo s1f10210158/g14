@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_api/youtube_api.dart';
-import 'package:g14/screens/recipegenerator2.dart';
+import 'package:g14/screens/recipegenerator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -121,7 +121,7 @@ class _Tab1State extends State<Tab1> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => RecipeGenerator2(videoId: selectedVideoId),
+                            builder: (context) => RecipeGenerator(videoId: selectedVideoId),
                           ),
                         );
                       }

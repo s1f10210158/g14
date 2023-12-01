@@ -65,5 +65,12 @@
         <string>このアプリではカメラへのアクセスが必要です。</string>
         <key>NSMicrophoneUsageDescription</key>
         <string>このアプリではマイクへのアクセスが必要です（ビデオ録画の場合）。</string>
+        <key>NSAppTransportSecurity</key>
+        <dict>
+           <key>NSAllowsArbitraryLoads</key>
+           <true/>
+        </dict>
+        <key>io.flutter.embedded_views_preview</key>
+        <true/>
     </dict>
 </plist>

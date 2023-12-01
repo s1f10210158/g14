@@ -17,6 +17,7 @@ class Tab5 extends StatefulWidget {
 class _Tab5State extends State<Tab5> {
   User? _currentUser = FirebaseAuth.instance.currentUser;
   Map<String, dynamic> _profileData = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -26,50 +27,66 @@ class _Tab5State extends State<Tab5> {
 
   Future<void> _loadUserProfile() async {
     if (_currentUser != null) {
+      String imageUrl;
       try {
-        // Firestoreからプロファイル情報を取得
-        var profileSnapshot = await FirebaseFirestore.instance
+        imageUrl = await FirebaseStorage.instance
+            .ref('user_images/${_currentUser!.uid}.jpg')
+            .getDownloadURL();
+      } catch (e) {
+        imageUrl = 'assets/images/default_image.jpg';
+      }
+
+      String phone = 'Not set';
+      String firstName = 'Not set';
+      String lastName = 'Not set';
+
+      try {
+        var phoneDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(_currentUser!.uid)
             .collection('profiles')
-            .doc('image') // 'image' ドキュメントにアクセス
+            .doc('phone')
             .get();
-
-        String imageUrl;
-        if (profileSnapshot.exists && profileSnapshot.data() != null) {
-          imageUrl = profileSnapshot.data()!['url']; // 画像のURLを取得
-        } else {
-          // デフォルトの画像URLを使用
-          imageUrl = await FirebaseStorage.instance
-              .ref('default_images/default_avatar.png')
-              .getDownloadURL();
+        if (phoneDoc.exists && phoneDoc.data() != null) {
+          phone = phoneDoc.data()!['phone'] ?? 'Not set';
         }
 
-        if (profileSnapshot.exists && profileSnapshot.data() != null) {
-          setState(() {
-            _profileData = profileSnapshot.data()!;
-            _profileData['image'] = imageUrl;
-          });
-        } else {
-          setState(() {
-            _profileData = {
-              'name': 'Not set',
-              'phone': 'Not set',
-              'email': 'Not set',
-              'about': 'No description added.',
-              'image': imageUrl,
-            };
-          });
+        var nameDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .collection('profiles')
+            .doc('name')
+            .get();
+        if (nameDoc.exists && nameDoc.data() != null) {
+          firstName = nameDoc.data()!['firstName'] ?? 'Not set';
+          lastName = nameDoc.data()!['lastName'] ?? 'Not set';
         }
+
+        setState(() {
+          _profileData = {
+            'name': '$firstName $lastName',
+            'phone': phone,
+            'email': 'Not set',
+            'about': 'No description added.',
+            'image': imageUrl,
+          };
+          _isLoading = false;
+        });
       } catch (e) {
         print('Error loading user profile: $e');
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -94,23 +111,23 @@ class _Tab5State extends State<Tab5> {
             ),
             InkWell(
               child: DisplayImage(
-                imagePath: _profileData['image'] ?? 'assets/images/default_image.jpg', // 画像のURLまたはデフォルトの画像パス
+                imagePath: _profileData['image'],
                 onPressed: () {
                   navigateSecondPage(EditImagePage());
                 },
               ),
             ),
-            buildUserInfoDisplay(_profileData['name'], 'Name', EditNameFormPage()),
-            buildUserInfoDisplay(_profileData['phone'], 'Phone', EditPhoneFormPage()),
-            buildUserInfoDisplay(_profileData['email'], 'Email', EditEmailFormPage()),
-            buildAbout(_profileData['about']),
+            buildUserInfoDisplay('Name', '${_profileData['name']}', EditNameFormPage()),
+            buildUserInfoDisplay('Phone', '${_profileData['phone']}', EditPhoneFormPage()),
+            buildUserInfoDisplay('Email', '${_profileData['email']}', EditEmailFormPage()),
+            buildAbout('${_profileData['about']}'),
           ],
         ),
       ),
     );
   }
 
-  Widget buildUserInfoDisplay(String? getValue, String title, Widget editPage) {
+  Widget buildUserInfoDisplay(String title, String? getValue, Widget editPage) {
     return Padding(
       padding: EdgeInsets.only(bottom: 10),
       child: Column(

@@ -28,14 +28,39 @@ class EditNameFormPageState extends State<EditNameFormPage> {
 
   Future<void> updateUserName(String firstName, String lastName) async {
     if (_currentUser != null) {
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(_currentUser!.uid)
-          .update({
-        'firstName': firstName,
-        'lastName': lastName,
-      });
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .collection('profiles')
+            .doc('name')
+            .set({'firstName': firstName, 'lastName': lastName},
+            SetOptions(merge: true));
+        _showUpdateSuccessDialog(context);
+      } catch (e) {
+        print('Error updating name: $e');
+      }
     }
+  }
+
+  void _showUpdateSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Update Successful"),
+          content: const Text("Your name has been updated."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -48,9 +73,40 @@ class EditNameFormPageState extends State<EditNameFormPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            // ... Your existing widgets
             Padding(
-              padding: EdgeInsets.only(top: 150),
+              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+              child: TextFormField(
+                controller: firstNameController,
+                decoration: InputDecoration(
+                  labelText: 'First Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your first name';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+              child: TextFormField(
+                controller: lastNameController,
+                decoration: InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your last name';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: SizedBox(
@@ -58,9 +114,7 @@ class EditNameFormPageState extends State<EditNameFormPage> {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate() &&
-                          isAlpha(firstNameController.text) &&
-                          isAlpha(lastNameController.text)) {
+                      if (_formKey.currentState!.validate()) {
                         await updateUserName(
                           firstNameController.text,
                           lastNameController.text,

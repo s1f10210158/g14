@@ -28,11 +28,14 @@ class EditPhoneFormPageState extends State<EditPhoneFormPage> {
   Future<void> updatePhone(String phone) async {
     if (_currentUser != null) {
       await FirebaseFirestore.instance
-          .collection('profiles')
+          .collection('users')
           .doc(_currentUser!.uid)
-          .update({'phone': phone});
+          .collection('profiles')
+          .doc('phone')
+          .set({'phone': phone}, SetOptions(merge: true));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

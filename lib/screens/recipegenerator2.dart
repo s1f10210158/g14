@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:g14/widget/YoutubeVideoPlayer.dart';
+
 
 class RecipeGenerator2 extends StatefulWidget {
   final String videoId;
@@ -15,6 +18,7 @@ class RecipeGenerator2 extends StatefulWidget {
 class _RecipeGenerator2State extends State<RecipeGenerator2> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String _responseText = "";
+  late YoutubePlayerController _youtubePlayerController;  // YouTubeプレイヤーコントローラの追加
   final TextEditingController _questionController = TextEditingController();
   bool _isLoading = false;
 
@@ -25,6 +29,11 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
   @override
   void initState() {
     super.initState();
+    _youtubePlayerController = YoutubePlayerController.fromVideoId(
+      videoId: widget.videoId,
+      autoPlay: false,
+      params: const YoutubePlayerParams(showFullscreenButton: true),
+    );
     _saveSubtitles();
   }
 
@@ -115,6 +124,11 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            YoutubePlayer(
+              controller: _youtubePlayerController,
+              aspectRatio: 16 / 9,
+
+            ),
             SizedBox(height: 20),
             _isLoading
                 ? Expanded(child: Center(
@@ -140,4 +154,10 @@ class _RecipeGenerator2State extends State<RecipeGenerator2> {
       ),
     );
   }
+  @override
+  void dispose() {
+    _youtubePlayerController.close();
+    super.dispose();
+  }
 }
+
