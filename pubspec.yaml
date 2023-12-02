@@ -9,6 +9,8 @@ environment:
   sdk: '>=3.1.2 <4.0.0'
 
 dependencies:
+  custom_navigation_bar: ^0.8.2
+  fan_floating_menu: any
   flutter_inappwebview: ^5.8.0
   youtube_player_flutter: ^8.1.2
   firebase_storage: ^11.5.2

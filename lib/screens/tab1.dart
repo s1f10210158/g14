@@ -3,9 +3,8 @@ import 'package:youtube_api/youtube_api.dart';
 import 'package:g14/screens/recipegenerator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:hyper_effects/hyper_effects.dart';
-
+import 'package:g14/widget/videocard.dart' as video_card;
 
 class Tab1 extends StatefulWidget {
   @override
@@ -13,9 +12,9 @@ class Tab1 extends StatefulWidget {
 }
 
 class _Tab1State extends State<Tab1> {
-  static const String key = "AIzaSyAd6OIW60UHOBRO_10VhujI6FujyBQsTB4";
+  static const String key = "AIzaSyAd6OIW60UHOBRO_10VhujI6FujyBQsTB4"; // 実験用のAPIキー
   YoutubeAPI youtube = YoutubeAPI(key, maxResults: 20, type: 'video');
-  List<YouTubeVideo> videoResult = [];
+  List<video_card.YouTubeVideo> videoResult = [];
   bool _isLoading = false;
   TextEditingController searchController = TextEditingController();
 
@@ -24,20 +23,45 @@ class _Tab1State extends State<Tab1> {
       _isLoading = true;
     });
 
-    List<YouTubeVideo> videos = await youtube.search(query, order: 'relevance', videoDuration: 'any', regionCode: 'JP');
+    var searchResults = await youtube.search(query, order: 'relevance', videoDuration: 'any', regionCode: 'JP');
 
-    List<YouTubeVideo> videosWithCaptions = [];
-    for (var video in videos) {
-      if (await checkForCaptions(video.id)) {
-        videosWithCaptions.add(video);
+    // 各動画のIDを取得
+    List<String> videoIds = searchResults.map((video) => video.id).where((id) => id != null).cast<String>().toList();
+    // YouTube Data API v3を使用して各動画の詳細情報を取得
+    var videoDetailsResponse = await http.get(
+        Uri.parse('https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoIds.join(',')}&key=${key}')
+    );
+
+    if (videoDetailsResponse.statusCode == 200) {
+      var videoDetailsData = json.decode(videoDetailsResponse.body);
+      List<video_card.YouTubeVideo> videosWithDetails = [];
+
+      for (var videoData in videoDetailsData['items']) {
+        // 必要な情報を取り出し
+        var newVideo = video_card.YouTubeVideo(
+          id: videoData['id'],
+          title: videoData['snippet']['title'],
+          thumbnailUrl: videoData['snippet']['thumbnails']['high']['url'],
+          channelTitle: videoData['snippet']['channelTitle'],
+          viewCount: int.parse(videoData['statistics']['viewCount']),
+          publishedAt: DateTime.parse(videoData['snippet']['publishedAt']),
+        );
+        videosWithDetails.add(newVideo);
       }
-    }
 
-    setState(() {
-      videoResult = videosWithCaptions;
-      _isLoading = false;
-    });
+      setState(() {
+        videoResult = videosWithDetails;
+        _isLoading = false;
+      });
+    } else {
+      // エラー処理
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
+
+
 
   Future<bool> checkForCaptions(String? videoId) async {
     if (videoId == null) return false;
@@ -56,11 +80,6 @@ class _Tab1State extends State<Tab1> {
     } else {
       return false;
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -91,30 +110,8 @@ class _Tab1State extends State<Tab1> {
               child: ListView.builder(
                 itemCount: videoResult.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: Image.network(
-                      videoResult[index].thumbnail.small.url ?? '',
-                      errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
-                      width: 150, // Set the width to your desired size
-                      height: 150, // Set the height to your desired size
-                    ).scrollTransition(
-                          (context, widget, event) => widget
-                          .blur(
-                        switch (event.phase) {
-                          ScrollPhase.identity => 0,
-                          ScrollPhase.topLeading => 10,
-                          ScrollPhase.bottomTrailing => 10,
-                        },
-                      )
-                          .scale(
-                        switch (event.phase) {
-                          ScrollPhase.identity => 1,
-                          ScrollPhase.topLeading => 0.9,
-                          ScrollPhase.bottomTrailing => 1,
-                        },
-                      ),
-                    ),
-                    title: Text(videoResult[index].title),
+                  return video_card.VideoCard(
+                    video: videoResult[index],
                     onTap: () {
                       String? selectedVideoId = videoResult[index].id;
                       if (selectedVideoId != null) {
@@ -133,8 +130,8 @@ class _Tab1State extends State<Tab1> {
           ],
         ),
         _isLoading
-            ? Center(child: Image.asset('assets/gif/road.gif')) // ロード中はGIFを表示
-            : SizedBox.shrink(), // ロード完了後は表示しない
+            ? Center(child: Image.asset('assets/gif/road.gif'))
+            : SizedBox.shrink(),
       ],
     );
   }

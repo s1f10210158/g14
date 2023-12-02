@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:fan_floating_menu/fan_floating_menu.dart';
+
 
 
 class RecipeGenerator extends StatefulWidget {
@@ -20,7 +22,7 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
   String _responseText = "";
   final TextEditingController _questionController = TextEditingController();
   bool _isLoading = false;
-  late YoutubePlayerController _controller; // Define the controller
+  late YoutubePlayerController _controller;
 
   String? getCurrentUserUID() {
     return _auth.currentUser?.uid;
@@ -29,7 +31,7 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
   @override
   void initState() {
     super.initState();
-    _controller = YoutubePlayerController( // Initialize the controller
+    _controller = YoutubePlayerController(
       initialVideoId: widget.videoId,
       flags: YoutubePlayerFlags(
         autoPlay: true,
@@ -38,6 +40,7 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
     );
     _saveSubtitles();
   }
+
   Future<void> _saveSubtitles() async {
     String? userId = getCurrentUserUID();
     setState(() {
@@ -51,7 +54,8 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
       return;
     }
 
-    final captionUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/caption_firestoresave?video_id=${widget.videoId}&user_id=$userId';
+    final captionUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/caption_firestoresave?video_id=${widget
+        .videoId}&user_id=$userId';
     final captionResponse = await http.get(Uri.parse(captionUrl));
 
     if (captionResponse.statusCode == 200) {
@@ -61,13 +65,15 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
       });
     } else {
       setState(() {
-        _responseText = "Error in caption_firestoresave: ${captionResponse.body}";
+        _responseText =
+        "Error in caption_firestoresave: ${captionResponse.body}";
       });
     }
   }
 
   Future<void> _generateSummary(String userId) async {
-    final generateUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/chatgpt_generate?video_id=${widget.videoId}&user_id=$userId';
+    final generateUrl = 'https://asia-northeast1-chatgptrecipegenerator.cloudfunctions.net/chatgpt_generate?video_id=${widget
+        .videoId}&user_id=$userId';
     final generateResponse = await http.get(Uri.parse(generateUrl));
 
     if (generateResponse.statusCode == 200) {
@@ -83,7 +89,8 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
     }
   }
 
-  Future<void> _interactWithChatGPT(String userId, String videoId, String userQuestion) async {
+  Future<void> _interactWithChatGPT(String userId, String videoId,
+      String userQuestion) async {
     setState(() {
       _isLoading = true;
     });
@@ -121,52 +128,99 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
       ),
       builder: (context, player) {
         return Scaffold(
-          // AppBarを削除し、Bodyの最初に戻るボタンを配置
+          appBar: AppBar(
+            backgroundColor: Colors.transparent, // AppBarを透明にする
+            elevation: 0, // 影をなくす
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black), // アイコンの色を変更
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text('', style: TextStyle(color: Colors.black)), // タイトルを空にする
+          ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    // 他のウィジェットがあればここに
-                  ],
-                ),
+
                 player,
                 // プレイヤーの下に続くウィジェット
                 SizedBox(height: 20),
                 _isLoading
-                    ? Expanded(child: Center(child: CircularProgressIndicator()))
-                    : Expanded(child: SingleChildScrollView(child: Text(_responseText))),
-                TextField(
-                  controller: _questionController,
-                  decoration: InputDecoration(
-                    labelText: '料理の鉄人に質問',
-                    border: OutlineInputBorder(),
-                  ),
+                    ? Expanded(
+                    child: Center(child: CircularProgressIndicator()))
+                    : Expanded(
+                    child: SingleChildScrollView(child: Text(_responseText))),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end, // これで右寄りに配置されます
+                  children: [
+                    Container(
+                      width: MediaQuery
+                          .of(context)
+                          .size
+                          .width * 0.8, // 画面幅の50%のサイズに設定
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20),
+                      child: TextField(
+                        controller: _questionController,
+                        decoration: InputDecoration(
+                          labelText: '料理の鉄人に質問',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 ElevatedButton(
-                  onPressed: () => _interactWithChatGPT(
-                      getCurrentUserUID() ?? "", widget.videoId, _questionController.text),
+                  onPressed: () =>
+                      _interactWithChatGPT(
+                          getCurrentUserUID() ?? "", widget.videoId,
+                          _questionController.text),
                   child: Text('質問を送信'),
                 ),
               ],
             ),
           ),
+
+          // FanFloatingMenu を追加
+          floatingActionButton: Padding(
+            padding: EdgeInsets.only(left: 20), // 右に余白を追加
+            child: FanFloatingMenu(
+              menuItems: [
+                FanMenuItem(
+                    onTap: () {
+                      // ここにアクションを追加
+                    },
+                    icon: Icons.edit_rounded,
+                    title: 'テキストを編集'
+                ),
+                FanMenuItem(
+                    onTap: () {
+                      // ここにアクションを追加
+                    },
+                    icon: Icons.save_rounded,
+                    title: 'ノートを保存'
+                ),
+                FanMenuItem(
+                    onTap: () {
+                      // ここにアクションを追加
+                    },
+                    icon: Icons.send_rounded,
+                    title: '画像を送信'
+                ),
+              ],
+              fanMenuDirection: FanMenuDirection.ltr,
+              expandItemsCurve: Curves.easeInOutBack,
+              toggleButtonWidget: null,
+              // または好きなウィジェット
+              toggleButtonIconColor: Colors.white,
+              toggleButtonColor: Colors.pink,
+            ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation
+              .endFloat, // FABの位置を右側に設定
         );
       },
     );
-  }
-
-
-
-  @override
-  void dispose() {
-    // _youtubePlayerController.close(); // YoutubePlayerControllerの破棄を削除
-    super.dispose();
   }
 }
