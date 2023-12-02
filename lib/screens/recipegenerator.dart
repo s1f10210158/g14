@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:fan_floating_menu/fan_floating_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 
 
@@ -88,6 +90,44 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
       });
     }
   }
+
+  Future<void> likeVideo(String userId, String videoId) async {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('likevideo')
+        .doc(videoId) // ビデオIDをドキュメントIDとして使用
+        .set({
+      'likedAt': FieldValue.serverTimestamp(), // 現在のタイムスタンプを保存
+      'videoId': videoId // ビデオIDも保存
+    })
+        .then((value) => print("Video Liked"))
+        .catchError((error) => print("Failed to like video: $error"));
+  }
+
+  Future<void> saveVideoToCalendar(String userId, String videoId) async {
+    String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now()); // 現在の日付をフォーマット
+    DocumentReference docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('Calendar_video')
+        .doc(formattedDate); // フォーマットされた日付をドキュメントIDとして使用
+
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(docRef);
+
+      if (!snapshot.exists) {
+        transaction.set(docRef, {'videoIds': [videoId]});
+      } else {
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ?? {};
+        List<dynamic> videoIds = data.containsKey('videoIds') ? List.from(data['videoIds']) : [];
+        videoIds.add(videoId);
+        transaction.update(docRef, {'videoIds': videoIds});
+      }
+    }).then((value) => print("Video Saved to Calendar"))
+        .catchError((error) => print("Failed to save video: $error"));
+  }
+
 
   Future<void> _interactWithChatGPT(String userId, String videoId,
       String userQuestion) async {
@@ -189,17 +229,23 @@ class _RecipeGeneratorState extends State<RecipeGenerator> {
               menuItems: [
                 FanMenuItem(
                     onTap: () {
-                      // ここにアクションを追加
+                      String? userId = getCurrentUserUID();
+                      if (userId != null) {
+                        likeVideo(userId, widget.videoId);
+                      }
                     },
-                    icon: Icons.edit_rounded,
-                    title: 'テキストを編集'
+                    icon: Icons.favorite, // いいねアイコンに変更
+                    title: 'いいねする'
                 ),
                 FanMenuItem(
                     onTap: () {
-                      // ここにアクションを追加
+                      String? userId = getCurrentUserUID();
+                      if (userId != null) {
+                        saveVideoToCalendar(userId, widget.videoId);
+                      }
                     },
-                    icon: Icons.save_rounded,
-                    title: 'ノートを保存'
+                    icon: Icons.calendar_today, // カレンダーアイコンに変更
+                    title: 'カレンダーに保存'
                 ),
                 FanMenuItem(
                     onTap: () {

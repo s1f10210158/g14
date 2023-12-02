@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class Tab4 extends StatefulWidget {
   @override
@@ -10,107 +10,91 @@ class Tab4 extends StatefulWidget {
 }
 
 class _Tab4State extends State<Tab4> {
-  DateTime _focused = DateTime.now();
-  DateTime? _selected;
-  String? _selectedEvent;
-  final formatter = DateFormat('yyyy-MM-dd');
+  Map<DateTime, List<String>> _events = {};
+  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
+  final DateFormat _formatter = DateFormat('yyyy-MM-dd');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  String? getCurrentUserUID() {
-    return _auth.currentUser?.uid;
+  @override
+  void initState() {
+    super.initState();
+    _fetchEventsForMonth(_focusedDay);
   }
 
-  Future<void> _showEditDialog() async {
-    TextEditingController eventController = TextEditingController(text: _selectedEvent);
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Event'),
+  Future<void> _fetchEventsForMonth(DateTime date) async {
+    String? userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    DateTime startOfMonth = DateTime(date.year, date.month, 1);
+    DateTime endOfMonth = DateTime(date.year, date.month + 1, 0);
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('Calendar_video')
+        .where('savedAt', isGreaterThanOrEqualTo: _formatter.format(startOfMonth))
+        .where('savedAt', isLessThanOrEqualTo: _formatter.format(endOfMonth))
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      Map<DateTime, List<String>> newEvents = {};
+      for (var doc in querySnapshot.docs) {
+        DateTime savedDate = _formatter.parse(doc.id); // ドキュメントIDを日付として使用
+        List<dynamic> videoIds = List.from(doc['videoIds'] ?? []);
+        newEvents[savedDate] = videoIds.cast<String>();
+      }
+      setState(() {
+        _events = newEvents;
+      });
+    });
+  }
+
+  void _onPageChanged(DateTime focusedDay) {
+    _fetchEventsForMonth(focusedDay);
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = focusedDay;
+    });
+
+    // 選択された日付に関連するイベントを表示する処理
+    if (_events.containsKey(selectedDay)) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Events'),
           content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextField(
-                  controller: eventController,
-                  decoration: InputDecoration(hintText: "Enter your event"),
-                ),
-              ],
+            child: Column(
+              children: _events[selectedDay]!
+                  .map((event) => ListTile(title: Text(event)))
+                  .toList(),
             ),
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Save'),
-              onPressed: () {
-                _saveDateToFirebase(_selected!, eventController.text);
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () {
-                _deleteEventFromFirebase(_selected!);
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _saveDateToFirebase(DateTime selectedDate, String event) {
-    final String formattedDate = formatter.format(selectedDate);
-    final String? userUID = getCurrentUserUID();
-
-    if (userUID != null) {
-      FirebaseFirestore.instance.collection('users')
-          .doc(userUID)
-          .collection('Calendar')
-          .doc(formattedDate)
-          .set({
-        'event': event,
-      });
-    }
-  }
-
-  void _deleteEventFromFirebase(DateTime selectedDate) {
-    final String formattedDate = formatter.format(selectedDate);
-    final String? userUID = getCurrentUserUID();
-
-    if (userUID != null) {
-      FirebaseFirestore.instance.collection('users')
-          .doc(userUID)
-          .collection('Calendar')
-          .doc(formattedDate)
-          .delete();
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: TableCalendar(
-          firstDay: DateTime.utc(2022, 4, 1),
-          lastDay: DateTime.utc(2029, 12, 31),
-          selectedDayPredicate: (day) {
-            return isSameDay(_selected, day);
-          },
-          onDaySelected: (selected, focused) async {
-            setState(() {
-              _selected = selected;
-              _focused = focused;
-            });
-            await _showEditDialog();
-          },
-          focusedDay: _focused,
+      body: TableCalendar(
+        firstDay: DateTime.utc(2022, 1, 1),
+        lastDay: DateTime.utc(2025, 12, 31),
+        focusedDay: _focusedDay,
+        onDaySelected: _onDaySelected,
+        eventLoader: (day) {
+          return _events[day] ?? [];
+        },
+        onPageChanged: _onPageChanged,
+        calendarStyle: CalendarStyle(
+          // カスタムスタイルを追加
+        ),
+        headerStyle: HeaderStyle(
+          // ヘッダースタイルのカスタマイズ
         ),
       ),
     );
